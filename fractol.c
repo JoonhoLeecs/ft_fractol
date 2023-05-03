@@ -6,7 +6,7 @@
 /*   By: joonhlee <joonhlee@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/01 16:14:58 by joonhlee          #+#    #+#             */
-/*   Updated: 2023/05/02 20:44:46 by joonhlee         ###   ########.fr       */
+/*   Updated: 2023/05/03 13:35:48 by joonhlee         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -22,8 +22,8 @@ int	main(int argc, char **argv)
 	fractol_init(&param);
 	mlx_put_image_to_window(param.mlx, param.mlx_win, param.img.img, 0, 0);
 	mlx_hook(param.mlx_win, 17, 0L, &exit_on_destroy, &param);
-	mlx_key_hook(param.mlx_win, key_hook, &param);
-	mlx_mouse_hook(param.mlx_win, mouse_hook, &param);
+	mlx_key_hook(param.mlx_win, &key_hook, &param);
+	mlx_mouse_hook(param.mlx_win, &mouse_hook, &param);
 	mlx_loop(param.mlx);
 }
 
@@ -43,6 +43,8 @@ int	check_arg(t_param *param, int argc, char **argv)
 		param->arg = arg;
 		return (1);
 	}
+	else if (ft_strcmp("Tricone", argv[1]) == 0 && argc == 2)
+		return (2);
 	else
 		return (-1);
 }
@@ -52,6 +54,7 @@ int	print_arg_error(void)
 	ft_putstr_fd("Invalid argument\n", 1);
 	ft_putstr_fd("Mandelbrot set: Mandelbrot\n", 1);
 	ft_putstr_fd("Julia set: Julia arg(1 - 4)\n", 1);
+	ft_putstr_fd("Tricone set: Tricone\n", 1);
 	return (1);
 }
 
@@ -87,6 +90,14 @@ void	init_plane(t_param *param)
 		param->img.yinc = 2.24 / (double) param->height;
 		set_img_color(param, &param->img);
 	}
+	else
+	{
+		param->img.xmin = -1.48;
+		param->img.ymin = -1.24;
+		param->img.xinc = 2.72 / (double) param->width;
+		param->img.yinc = 2.48 / (double) param->height;
+		set_img_color(param, &param->img);
+	}
 }
 
 void	set_img_color(t_param *param, t_img *img)
@@ -106,7 +117,7 @@ void	set_img_color(t_param *param, t_img *img)
 			else if (param->set == 1)
 				color = julia(x, y, img, param->arg);
 			else
-				color = mandelbrot(x, y, img);
+				color = tricone(x, y, img);
 			color = param->plt[param->pind](color);
 			set_pixel_color(img, x, y, color);
 			y++;
@@ -187,6 +198,31 @@ double	julia_preset(char c, int arg)
 		return (4);
 }
 
+int	tricone(int x, int y, t_img *img)
+{
+	int		iter;
+	t_mand	tric;
+
+	tric.cx = img->xmin + (double)x * img->xinc;
+	tric.cy = img->ymin + (double)y * img->yinc;
+	iter = 0;
+	tric.zx = 0;
+	tric.zy = 0;
+	tric.x2 = 0;
+	tric.y2 = 0;
+	tric.w = 0;
+	while (tric.x2 + tric.y2 <= 4 && iter < 255)
+	{
+		tric.zx = tric.x2 - tric.y2 + tric.cx;
+		tric.zy = tric.w + tric.cy;
+		tric.x2 = tric.zx * tric.zx;
+		tric.y2 = tric.zy * tric.zy;
+		tric.w = -2 * tric.zx * tric.zy;
+		iter++;
+	}
+	return (255 - iter);
+}
+
 void	set_pixel_color(t_img *img, int x, int y, int color)
 {
 	char	*dst;
@@ -200,6 +236,7 @@ int	key_hook(int keycode, t_param *param)
 	if (keycode == 53)
 	{
 		mlx_destroy_window(param->mlx, param->mlx_win);
+		mlx_destroy_image(param->mlx, param->img.img);
 		exit (0);
 	}
 	if (keycode == 126 || keycode == 125)
@@ -213,12 +250,8 @@ int	key_hook(int keycode, t_param *param)
 	return (0);
 }
 
-int	exit_on_destroy(int keycode, t_param *param)
+int	exit_on_destroy(void)
 {
-	int	tmp;
-
-	tmp = keycode;
-	tmp = param->width;
 	exit(0);
 }
 
@@ -236,6 +269,9 @@ int	mouse_hook(int button, int x, int y, t_param *param)
 
 void	zoom_in(t_param *param, int x, int y)
 {
+	if ((param->img.xmin == param->img.xmin + param->img.xinc)
+		|| (param->img.ymin == param->img.ymin + param->img.yinc))
+		return ;
 	param->temp_img.img = mlx_new_image(param->mlx, param->width,
 			param->height);
 	param->temp_img.addr = mlx_get_data_addr(param->temp_img.img,
@@ -243,15 +279,19 @@ void	zoom_in(t_param *param, int x, int y)
 			&(param->temp_img.endian));
 	param->temp_img.xmin = param->img.xmin + x * param->img.xinc * 0.1;
 	param->temp_img.xinc = param->img.xinc * 0.9;
-	param->temp_img.ymin = param->img.ymin + (param->height - y - 1) * param->img.yinc * 0.1;
+	param->temp_img.ymin = param->img.ymin + (param->height - y - 1)
+		* param->img.yinc * 0.1;
 	param->temp_img.yinc = param->img.yinc * 0.9;
 	set_img_color(param, &param->temp_img);
-	mlx_put_image_to_window(param->mlx, param->mlx_win, param->temp_img.img, 0, 0);
+	mlx_put_image_to_window(param->mlx, param->mlx_win,
+		param->temp_img.img, 0, 0);
 	clear_prev_img(param);
 }
 
 void	zoom_out(t_param *param, int x, int y)
 {
+	if ((param->img.xinc >= 4) || (param->img.yinc >= 4))
+		return ;
 	param->temp_img.img = mlx_new_image(param->mlx, param->width,
 			param->height);
 	param->temp_img.addr = mlx_get_data_addr(param->temp_img.img,
@@ -259,14 +299,12 @@ void	zoom_out(t_param *param, int x, int y)
 			&(param->temp_img.endian));
 	param->temp_img.xmin = param->img.xmin - x * param->img.xinc * 0.1;
 	param->temp_img.xinc = param->img.xinc * 1.1;
-	param->temp_img.ymin = param->img.ymin - (param->height - y - 1) * param->img.yinc * 0.1;
+	param->temp_img.ymin = param->img.ymin - (param->height - y - 1)
+		* param->img.yinc * 0.1;
 	param->temp_img.yinc = param->img.yinc * 1.1;
-	// param->temp_img.xmin = param->img.xmin * 1.1;
-	// param->temp_img.xinc = param->img.xinc * 1.1;
-	// param->temp_img.ymin = param->img.ymin * 1.1;
-	// param->temp_img.yinc = param->img.yinc * 1.1;
 	set_img_color(param, &param->temp_img);
-	mlx_put_image_to_window(param->mlx, param->mlx_win, param->temp_img.img, 0, 0);
+	mlx_put_image_to_window(param->mlx, param->mlx_win,
+		param->temp_img.img, 0, 0);
 	clear_prev_img(param);
 }
 
@@ -288,6 +326,9 @@ void	vertical_move(t_param *param, int key)
 {
 	int	direction;
 
+	if ((param->img.ymin >= 3)
+		|| (param->img.ymin + param->img.yinc * param->height <= -3))
+		return ;
 	direction = -2 * (key - 126) - 1;
 	param->temp_img.img = mlx_new_image(param->mlx, param->width,
 			param->height);
@@ -299,12 +340,9 @@ void	vertical_move(t_param *param, int key)
 	param->temp_img.ymin = param->img.ymin
 		+ direction * param->img.yinc * (param->height / 20);
 	param->temp_img.yinc = param->img.yinc;
-	// if (direction > 0)
-	// 	vm_set_img_up(param, &param->temp_img, &param->img);
-	// else
-	// 	vm_set_img_down(param, &param->temp_img, &param->img);
 	set_img_color(param, &param->temp_img);
-	mlx_put_image_to_window(param->mlx, param->mlx_win, param->temp_img.img, 0, 0);
+	mlx_put_image_to_window(param->mlx, param->mlx_win,
+		param->temp_img.img, 0, 0);
 	clear_prev_img(param);
 }
 
@@ -312,6 +350,9 @@ void	horizon_move(t_param *param, int key)
 {
 	int	direction;
 
+	if ((param->img.xmin >= 3)
+		|| (param->img.xmin + param->img.xinc * param->width <= -3))
+		return ;
 	direction = 2 * (key - 123) - 1;
 	param->temp_img.img = mlx_new_image(param->mlx, param->width,
 			param->height);
@@ -323,12 +364,9 @@ void	horizon_move(t_param *param, int key)
 	param->temp_img.xinc = param->img.xinc;
 	param->temp_img.ymin = param->img.ymin;
 	param->temp_img.yinc = param->img.yinc;
-	// if (direction > 0)
-	// 	vm_set_img_up(param, &param->temp_img, &param->img);
-	// else
-	// 	vm_set_img_down(param, &param->temp_img, &param->img);
 	set_img_color(param, &param->temp_img);
-	mlx_put_image_to_window(param->mlx, param->mlx_win, param->temp_img.img, 0, 0);
+	mlx_put_image_to_window(param->mlx, param->mlx_win,
+		param->temp_img.img, 0, 0);
 	clear_prev_img(param);
 }
 
@@ -344,17 +382,16 @@ void	new_palette(t_param *param)
 	param->temp_img.xinc = param->img.xinc;
 	param->temp_img.ymin = param->img.ymin;
 	param->temp_img.yinc = param->img.yinc;
-	// if (direction > 0)
-	// 	vm_set_img_up(param, &param->temp_img, &param->img);
-	// else
-	// 	vm_set_img_down(param, &param->temp_img, &param->img);
 	set_img_color(param, &param->temp_img);
-	mlx_put_image_to_window(param->mlx, param->mlx_win, param->temp_img.img, 0, 0);
+	mlx_put_image_to_window(param->mlx, param->mlx_win,
+		param->temp_img.img, 0, 0);
 	clear_prev_img(param);
 }
 
 void	new_arg(t_param *param)
 {
+	if (param->set != 1)
+		return ;
 	if (param->arg < 4)
 		param->arg = param->arg + 1;
 	else
@@ -368,12 +405,9 @@ void	new_arg(t_param *param)
 	param->temp_img.xinc = param->img.xinc;
 	param->temp_img.ymin = param->img.ymin;
 	param->temp_img.yinc = param->img.yinc;
-	// if (direction > 0)
-	// 	vm_set_img_up(param, &param->temp_img, &param->img);
-	// else
-	// 	vm_set_img_down(param, &param->temp_img, &param->img);
 	set_img_color(param, &param->temp_img);
-	mlx_put_image_to_window(param->mlx, param->mlx_win, param->temp_img.img, 0, 0);
+	mlx_put_image_to_window(param->mlx, param->mlx_win,
+		param->temp_img.img, 0, 0);
 	clear_prev_img(param);
 }
 
@@ -389,67 +423,63 @@ void	init_palette(t_param *param)
 	param->pind = 0;
 }
 
+
 int	palette1(int color)
 {
-	return (color);
+	float	r;
+	int		v;
+
+	r = powf((float)color, 1.5);
+	v = (int) r % 256;
+	v = v << 16 | 70 | color << 8;
+	return (v);
 }
 
 int	palette2(int color)
 {
-	return (color << 8);
+	int	v;
+
+	v = (color * color) % 256;
+	v = v << 8 | 100 | color << 16;
+	return (v);
 }
 
 int	palette3(int color)
 {
-	return (color << 8 | color);
+	float	r;
+	int		v;
+
+	r = powf((float)color, 1.5);
+	v = (int) r % 256;
+	v = v << 8 | 80 << 16 | color;
+	return (v);
 }
 
 int	palette4(int color)
 {
-	return (color << 16);
+	int		v;
+	float	r;
+	int		x;
+
+	v = (color * color) % 256;
+	r = powf((float)color, 1.5);
+	x = (int)r % 256;
+	v = v << 16 | x | color << 8;
+	return (v);
 }
 
+//mint-choco
 int	palette5(int color)
 {
-	return (color << 16 | color);
+	return (color << 8 | color);
 }
-
+//yellow
 int	palette6(int color)
 {
 	return (color << 16 | color << 8);
 }
-
+//white
 int	palette7(int color)
 {
 	return (color << 16 | color << 8 | color);
 }
-
-
-
-// void	vm_set_img_up(t_param *param, t_img *tmp, t_img *img, int dir)
-// {
-// 	int	x;
-// 	int	y;
-// 	int	color;
-
-// 	x = 0;
-// 	while (x < param->width)
-// 	{
-// 		y = param->height - 1 ;
-// 		// while (y >= param->height * 0.1)
-// 		while (y >= 0)
-// 		{
-// 			if (y >= param->height *)
-// 			y--;
-// 		}
-// 		{
-// 			if (param->set == 0)
-// 				color = mandelbrot(x, y, img);
-// 			else
-// 				color = mandelbrot(x, y, img);
-// 			set_pixel_color(img, x, y, color);
-// 			y--;
-// 		}
-// 		x++;
-// 	}
-// }

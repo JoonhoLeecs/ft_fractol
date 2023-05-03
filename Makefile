@@ -1,8 +1,8 @@
 CC = cc
 CFLAGS = -Wall -Wextra -Werror
-MLXDIR := $(CURDIR)/minilibx_mms_20191025_beta
+MLXDIR = ./minilibx_mms/
 MLXINC = ./minilibx_mms/
-MLX = ./minilibx_mms/libmlx.dylib
+MLX = libmlx.dylib
 LIBFTDIR = ./libft/
 LIBFT = libft.a
 SRC = fractol.c \
@@ -16,8 +16,7 @@ SRC = fractol.c \
 		ft_strcmp_bonus.c
 OBJECTS = $(SRC:.c=.o)
 # OBJECTS_BONUS = $(SRC_BONUS:.c=.o)
-# HEADER = fractol.h libft/libft.h
-HEADER = fractol.h
+HEADER = fractol.h libft/libft.h minilibx_mms/mlx.h
 HEADER_BONUS = pipex_bonus.h libft/libft.h getnextline/get_next_line.h
 NAME = fractol
 
@@ -32,13 +31,13 @@ all : MAKE_ALL
 $(NAME) : MAKE_ALL
 
 MAKE_ALL : $(MLX) $(LIBFT) $(OBJECTS) $(HEADER)
-			$(CC) $(CFLAGS) $(OBJECTS) -o $(NAME) -L$(MLXINC) -lmlx -L. -lft -framework OpenGL -framework AppKit
+			$(CC) $(CFLAGS) $(OBJECTS) -o $(NAME) -lm -L. -lmlx -L. -lft -framework OpenGL -framework AppKit
 			@touch MAKE_ALL
 #			@rm -f MAKE_BONUS
 
 $(MLX) :
-	export DYLD_LIBRARY_PATH=$(MLXDIR)
-	$(MAKE) -C $(MLXINC)
+	$(MAKE) -C $(MLXDIR)
+	cp $(MLXDIR)$(MLX) .
 
 $(LIBFT) :
 	$(MAKE) bonus -C $(LIBFTDIR)
@@ -55,6 +54,7 @@ clean :
 	$(MAKE) clean -C $(LIBFTDIR)
 	rm -f $(OBJECTS)
 	rm -f $(LIBFT)
+	rm -f $(MLX)
 	@rm -f MAKE_ALL MAKE_BONUS
 # rm -f $(OBJECTS_BONUS)
 

@@ -6,7 +6,7 @@
 /*   By: joonhlee <joonhlee@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/01 16:15:11 by joonhlee          #+#    #+#             */
-/*   Updated: 2023/05/02 20:41:35 by joonhlee         ###   ########.fr       */
+/*   Updated: 2023/05/03 13:42:00 by joonhlee         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,7 +15,7 @@
 
 # include "libft/libft.h"
 # include "minilibx_mms/mlx.h"
-# include <stdio.h>
+# include <math.h>
 
 typedef struct s_img
 {
@@ -65,10 +65,11 @@ void set_pixel_color(t_img *img, int x, int y, int color);
 int mandelbrot(int x, int y, t_img *img);
 int julia(int x, int y, t_img *img, int arg);
 double julia_preset(char c, int arg);
+int tricone(int x, int y, t_img *img);
 void init_plane(t_param *param);
 void set_img_color(t_param *param, t_img *img);
 int key_hook(int keycode, t_param *param);
-int exit_on_destroy(int keycode, t_param *param);
+int exit_on_destroy(void);
 int mouse_hook(int button, int x, int y, t_param *param);
 void zoom_in(t_param *param, int x, int y);
 void zoom_out(t_param *param, int x, int y);
