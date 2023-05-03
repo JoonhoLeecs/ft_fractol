@@ -1,16 +1,16 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   fractol_hook2.c                                    :+:      :+:    :+:   */
+/*   fractol_hook2_bonus.c                              :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: joonhlee <joonhlee@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/01 16:14:58 by joonhlee          #+#    #+#             */
-/*   Updated: 2023/05/03 14:08:57 by joonhlee         ###   ########.fr       */
+/*   Updated: 2023/05/03 15:58:46 by joonhlee         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "fractol.h"
+#include "fractol_bonus.h"
 
 void	zoom_in(t_param *param, int x, int y)
 {

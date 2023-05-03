@@ -1,16 +1,16 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   fractol_set.c                                      :+:      :+:    :+:   */
+/*   fractol_set_bonus.c                                :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: joonhlee <joonhlee@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/01 16:14:58 by joonhlee          #+#    #+#             */
-/*   Updated: 2023/05/03 14:09:01 by joonhlee         ###   ########.fr       */
+/*   Updated: 2023/05/03 15:59:04 by joonhlee         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "fractol.h"
+#include "fractol_bonus.h"
 
 int	mandelbrot(int x, int y, t_img *img)
 {

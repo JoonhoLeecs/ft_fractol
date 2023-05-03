@@ -6,7 +6,6 @@ MLX = libmlx.dylib
 LIBFTDIR = ./libft/
 LIBFT = libft.a
 SRC = fractol.c \
-		ft_strcmp.c \
 		fractol_hook.c \
 		fractol_hook2.c \
 		fractol_hook3.c \
@@ -15,7 +14,6 @@ SRC = fractol.c \
 		fractol_palette2.c \
 		fractol_set.c
 SRC_BONUS = fractol_bonus.c \
-		ft_strcmp_bonus.c \
 		fractol_hook_bonus.c \
 		fractol_hook2_bonus.c \
 		fractol_hook3_bonus.c \
@@ -62,16 +60,16 @@ MAKE_BONUS : $(MLX) $(LIBFT) $(OBJECTS_BONUS) $(HEADER)
 
 clean :
 	$(MAKE) clean -C $(LIBFTDIR)
+	$(MAKE) clean -C $(MLXINC)
 	rm -f $(OBJECTS)
 	rm -f $(OBJECTS_BONUS)
 	rm -f $(LIBFT)
-	rm -f $(MLX)
 	@rm -f MAKE_ALL MAKE_BONUS
 
 fclean :
-	$(MAKE) fclean -C $(LIBFTDIR)
-	$(MAKE) clean -C $(MLXINC)
 	$(MAKE) clean
+	$(MAKE) fclean -C $(LIBFTDIR)
+	rm -f $(MLX)
 	rm -f $(NAME)
 
 re :
