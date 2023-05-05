@@ -48,7 +48,7 @@ $(MLX) :
 
 $(LIBFT) :
 	$(MAKE) bonus -C $(LIBFTDIR)
-	cp $(LIBFTDIR)/$(LIBFT) $(LIBFT)
+	cp $(LIBFTDIR)$(LIBFT) $(LIBFT)
 
 bonus : MAKE_BONUS
 
